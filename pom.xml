@@ -36,15 +36,9 @@
     </description>
 
     <scm>
-        <connection>
-            scm:svn:http://svn.apache.org/repos/asf/sling/trunk/bundles/resourceaccesssecurity/core
-        </connection>
-        <developerConnection>
-            scm:svn:https://svn.apache.org/repos/asf/sling/trunk/bundles/resourceaccesssecurity/core
-        </developerConnection>
-        <url>
-            http://svn.apache.org/viewvc/sling/trunk/bundles/resourceaccesssecurity/core
-        </url>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-resourceaccesssecurity.git</conncetion>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-resourceaccesssecurity.git</developerConnection>
+        <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-resourceaccesssecurity.git</url>
     </scm>
 
     <properties>
