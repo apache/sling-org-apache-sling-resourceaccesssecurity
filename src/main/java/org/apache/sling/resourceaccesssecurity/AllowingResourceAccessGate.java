@@ -21,6 +21,7 @@ package org.apache.sling.resourceaccesssecurity;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.security.AccessSecurityException;
+import org.apache.sling.resourceaccesssecurity.ResourceAccessGate.GateResult;
 
 /**
  * This abstract implementation of the <code>ResourceAccessGate</code> can be
@@ -38,6 +39,11 @@ public abstract class AllowingResourceAccessGate implements ResourceAccessGate {
     @Override
     public GateResult canCreate(final String absPathName,
             final ResourceResolver resourceResolver) {
+        return GateResult.CANT_DECIDE;
+    }
+
+    @Override
+    public GateResult canReorderChildren(Resource resource) {
         return GateResult.CANT_DECIDE;
     }
 
@@ -76,6 +82,7 @@ public abstract class AllowingResourceAccessGate implements ResourceAccessGate {
         return GateResult.CANT_DECIDE;
     }
 
+    
     @Override
     public String transformQuery(final String query, final String language,
             final ResourceResolver resourceResolver) throws AccessSecurityException {
@@ -89,6 +96,11 @@ public abstract class AllowingResourceAccessGate implements ResourceAccessGate {
 
     @Override
     public boolean hasCreateRestrictions(final ResourceResolver resourceResolver) {
+        return false;
+    }
+
+    @Override
+    public boolean hasReorderChildrenRestrictions(ResourceResolver resourceResolver) {
         return false;
     }
 

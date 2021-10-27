@@ -171,6 +171,47 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
         return returnValue;
     }
 
+    
+    @Override
+    public boolean canReorderChildren(Resource resource) {
+        final Iterator<ResourceAccessGateHandler> handlers = getMatchingResourceAccessGateHandlerIterator(
+                resource.getPath(), ResourceAccessGate.Operation.REORDER_CHILDREN);
+        boolean result = false;
+        if ( handlers != null ) {
+            GateResult finalGateResult = null;
+            boolean noGateMatched = true;
+
+            while ( handlers.hasNext() ) {
+                noGateMatched = false;
+                final ResourceAccessGateHandler resourceAccessGateHandler  = handlers.next();
+
+                final GateResult gateResult = !resourceAccessGateHandler
+                        .getResourceAccessGate().hasReorderChildrenRestrictions(resource.getResourceResolver()) ? GateResult.GRANTED
+                        : resourceAccessGateHandler.getResourceAccessGate()
+                                .canReorderChildren(resource);
+                if (finalGateResult == null) {
+                    finalGateResult = gateResult;
+                } else if (finalGateResult != GateResult.GRANTED && gateResult != GateResult.CANT_DECIDE) {
+                    finalGateResult = gateResult;
+                }
+                if (finalGateResult == GateResult.GRANTED || gateResult != GateResult.CANT_DECIDE && 
+                        resourceAccessGateHandler.isFinalOperation(ResourceAccessGate.Operation.REORDER_CHILDREN)) {
+                    break;
+                }
+            }
+
+            if ( finalGateResult == GateResult.GRANTED ) {
+                result = true;
+            } else if ( finalGateResult == GateResult.DENIED ) {
+                result = false;
+            } else if ( noGateMatched && this.defaultAllowIfNoGateMatches )
+            {
+                result = true;
+            }
+        }
+        return result;
+    }
+
     @Override
     public boolean canCreate(final String path,
             final ResourceResolver resolver) {
