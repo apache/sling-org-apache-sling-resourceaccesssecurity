@@ -18,6 +18,7 @@
  */
 package org.apache.sling.resourceaccesssecurity.impl;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -25,22 +26,23 @@ import java.util.regex.Pattern;
 
 import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.resourceaccesssecurity.ResourceAccessGate;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.ServiceReference;
 
 public class ResourceAccessGateHandler {
 
-    private final ResourceAccessGate resourceAccessGate;
+    private final @NotNull ResourceAccessGate resourceAccessGate;
 
-    private final ServiceReference<ResourceAccessGate> reference;
+    private final @NotNull ServiceReference<ResourceAccessGate> reference;
 
-    private final Pattern pathPattern;
+    private final @NotNull Pattern pathPattern;
     private final Set<ResourceAccessGate.Operation> operations = new HashSet<>();
     private final Set<ResourceAccessGate.Operation> finalOperations = new HashSet<>();
 
     /**
      * constructor
      */
-    public ResourceAccessGateHandler ( final ServiceReference<ResourceAccessGate> resourceAccessGateRef, final ResourceAccessGate resourceAccessGate ) {
+    public ResourceAccessGateHandler( @NotNull final ServiceReference<ResourceAccessGate> resourceAccessGateRef, @NotNull final ResourceAccessGate resourceAccessGate ) {
         this.reference = resourceAccessGateRef;
         this.resourceAccessGate = resourceAccessGate;
         // extract the service property "path"
@@ -52,8 +54,8 @@ public class ResourceAccessGateHandler {
         }
 
         // extract the service property "operations"
-        final String ops[] = PropertiesUtil.toStringArray( resourceAccessGateRef.getProperty(ResourceAccessGate.OPERATIONS) );
-        if ( ops != null && ops.length > 0 ) {
+        final String[] ops = PropertiesUtil.toStringArray( resourceAccessGateRef.getProperty(ResourceAccessGate.OPERATIONS) );
+        if ( ops != null && ops.length > 0) {
             for (final String opAsString : ops) {
                 final ResourceAccessGate.Operation operation = ResourceAccessGate.Operation.fromString(opAsString);
                 if ( operation != null ) {
@@ -61,16 +63,13 @@ public class ResourceAccessGateHandler {
                 }
             }
         } else {
-           for (final ResourceAccessGate.Operation op : ResourceAccessGate.Operation.values() ) {
-               operations.add(op);
-           }
+           Collections.addAll(operations, ResourceAccessGate.Operation.values());
         }
 
         // extract the service property "finaloperations"
-        final String finalOps = PropertiesUtil.toString(resourceAccessGateRef.getProperty(ResourceAccessGate.FINALOPERATIONS), null );
-        if ( finalOps != null && finalOps.length() > 0 ) {
-            final String[] finOpsArray = finalOps.split( "," );
-            for (final String opAsString : finOpsArray) {
+        final String[] finalOps = PropertiesUtil.toStringArray( resourceAccessGateRef.getProperty(ResourceAccessGate.FINALOPERATIONS) );
+        if ( finalOps != null ) {
+            for (final String opAsString : finalOps) {
                 final ResourceAccessGate.Operation operation = ResourceAccessGate.Operation.fromString(opAsString);
                 if ( operation != null ) {
                     finalOperations.add(operation);
@@ -80,7 +79,7 @@ public class ResourceAccessGateHandler {
 
     }
 
-    public boolean matches ( final String path, final ResourceAccessGate.Operation operation ) {
+    public boolean matches( final String path, final ResourceAccessGate.Operation operation ) {
         boolean returnValue = false;
 
         if ( operations.contains( operation ) ) {
@@ -101,7 +100,7 @@ public class ResourceAccessGateHandler {
         return finalOperations.contains(operation);
     }
 
-    public ResourceAccessGate getResourceAccessGate () {
+    public @NotNull ResourceAccessGate getResourceAccessGate() {
         return resourceAccessGate;
     }
 
