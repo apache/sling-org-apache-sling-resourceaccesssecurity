@@ -43,7 +43,7 @@ public abstract class AllowingResourceAccessGate implements ResourceAccessGate {
     }
 
     @Override
-    public GateResult canReorderChildren(Resource resource) {
+    public GateResult canOrderChildren(Resource resource) {
         return GateResult.CANT_DECIDE;
     }
 

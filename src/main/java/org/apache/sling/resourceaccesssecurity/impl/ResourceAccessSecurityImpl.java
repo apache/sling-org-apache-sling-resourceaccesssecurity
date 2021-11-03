@@ -173,9 +173,9 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
 
     
     @Override
-    public boolean canReorderChildren(Resource resource) {
+    public boolean canOrderChildren(Resource resource) {
         final Iterator<ResourceAccessGateHandler> handlers = getMatchingResourceAccessGateHandlerIterator(
-                resource.getPath(), ResourceAccessGate.Operation.REORDER_CHILDREN);
+                resource.getPath(), ResourceAccessGate.Operation.ORDER_CHILDREN);
         boolean result = false;
         if ( handlers != null ) {
             GateResult finalGateResult = null;
@@ -188,14 +188,14 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
                 final GateResult gateResult = !resourceAccessGateHandler
                         .getResourceAccessGate().hasReorderChildrenRestrictions(resource.getResourceResolver()) ? GateResult.GRANTED
                         : resourceAccessGateHandler.getResourceAccessGate()
-                                .canReorderChildren(resource);
+                                .canOrderChildren(resource);
                 if (finalGateResult == null) {
                     finalGateResult = gateResult;
                 } else if (finalGateResult != GateResult.GRANTED && gateResult != GateResult.CANT_DECIDE) {
                     finalGateResult = gateResult;
                 }
                 if (finalGateResult == GateResult.GRANTED || gateResult != GateResult.CANT_DECIDE && 
-                        resourceAccessGateHandler.isFinalOperation(ResourceAccessGate.Operation.REORDER_CHILDREN)) {
+                        resourceAccessGateHandler.isFinalOperation(ResourceAccessGate.Operation.ORDER_CHILDREN)) {
                     break;
                 }
             }
