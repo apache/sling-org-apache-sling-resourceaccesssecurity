@@ -100,7 +100,7 @@ public abstract class AllowingResourceAccessGate implements ResourceAccessGate {
     }
 
     @Override
-    public boolean hasReorderChildrenRestrictions(ResourceResolver resourceResolver) {
+    public boolean hasOrderChildrenRestrictions(ResourceResolver resourceResolver) {
         return false;
     }
 

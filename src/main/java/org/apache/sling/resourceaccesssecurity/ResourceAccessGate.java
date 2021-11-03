@@ -203,7 +203,7 @@ public interface ResourceAccessGate {
 
     public boolean hasCreateRestrictions(ResourceResolver resourceResolver);
 
-    public default boolean hasReorderChildrenRestrictions(ResourceResolver resourceResolver) {
+    public default boolean hasOrderChildrenRestrictions(ResourceResolver resourceResolver) {
         return true;
     }
 

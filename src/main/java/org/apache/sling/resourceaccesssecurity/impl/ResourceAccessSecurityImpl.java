@@ -186,7 +186,7 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
                 final ResourceAccessGateHandler resourceAccessGateHandler  = handlers.next();
 
                 final GateResult gateResult = !resourceAccessGateHandler
-                        .getResourceAccessGate().hasReorderChildrenRestrictions(resource.getResourceResolver()) ? GateResult.GRANTED
+                        .getResourceAccessGate().hasOrderChildrenRestrictions(resource.getResourceResolver()) ? GateResult.GRANTED
                         : resourceAccessGateHandler.getResourceAccessGate()
                                 .canOrderChildren(resource);
                 if (finalGateResult == null) {
