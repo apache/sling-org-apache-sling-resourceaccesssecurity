@@ -27,24 +27,22 @@ import org.apache.sling.commons.osgi.PropertiesUtil;
 import org.apache.sling.resourceaccesssecurity.ResourceAccessGate;
 import org.osgi.framework.ServiceReference;
 
-public class ResourceAccessGateHandler implements Comparable<ResourceAccessGateHandler> {
+public class ResourceAccessGateHandler {
 
     private final ResourceAccessGate resourceAccessGate;
 
-    private final ServiceReference reference;
+    private final ServiceReference<ResourceAccessGate> reference;
 
     private final Pattern pathPattern;
-    private final Set<ResourceAccessGate.Operation> operations = new HashSet<ResourceAccessGate.Operation>();
-    private final Set<ResourceAccessGate.Operation> finalOperations = new HashSet<ResourceAccessGate.Operation>();
+    private final Set<ResourceAccessGate.Operation> operations = new HashSet<>();
+    private final Set<ResourceAccessGate.Operation> finalOperations = new HashSet<>();
 
     /**
      * constructor
      */
-    public ResourceAccessGateHandler ( final ServiceReference resourceAccessGateRef ) {
+    public ResourceAccessGateHandler ( final ServiceReference<ResourceAccessGate> resourceAccessGateRef, final ResourceAccessGate resourceAccessGate ) {
         this.reference = resourceAccessGateRef;
-
-        resourceAccessGate = (ResourceAccessGate) resourceAccessGateRef.getBundle().
-                getBundleContext().getService(resourceAccessGateRef);
+        this.resourceAccessGate = resourceAccessGate;
         // extract the service property "path"
         final String path = (String) resourceAccessGateRef.getProperty(ResourceAccessGate.PATH);
         if ( path != null ) {
@@ -105,12 +103,6 @@ public class ResourceAccessGateHandler implements Comparable<ResourceAccessGateH
 
     public ResourceAccessGate getResourceAccessGate () {
         return resourceAccessGate;
-    }
-
-    @Override
-    public int compareTo(final ResourceAccessGateHandler o) {
-        // services with higher service ranking should be the first in a list
-        return -this.reference.compareTo(o.reference);
     }
 
     @Override

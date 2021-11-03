@@ -20,5 +20,5 @@
 @Version("1.1.0")
 package org.apache.sling.resourceaccesssecurity;
 
-import aQute.bnd.annotation.Version;
+import org.osgi.annotation.versioning.Version;
 

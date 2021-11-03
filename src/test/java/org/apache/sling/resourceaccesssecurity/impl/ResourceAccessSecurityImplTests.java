@@ -19,40 +19,31 @@
 package org.apache.sling.resourceaccesssecurity.impl;
 
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Collections;
+
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.Resource;
-import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.security.ResourceAccessSecurity;
 import org.apache.sling.resourceaccesssecurity.ResourceAccessGate;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
-
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-
-import static org.junit.Assert.assertTrue;
+import org.osgi.service.component.ComponentContext;
 
 public class ResourceAccessSecurityImplTests {
 
-    ServiceReference serviceReference;
+    ServiceReference<ResourceAccessGate> serviceReference;
     ResourceAccessSecurity resourceAccessSecurity;
     ResourceAccessGate resourceAccessGate;
-
-    @Before
-    public void setUp() {
-        resourceAccessSecurity = new ProviderResourceAccessSecurityImpl();
-    }
-
 
     @Test
     public void testCanUpdate(){
@@ -191,25 +182,19 @@ public class ResourceAccessSecurityImplTests {
 
     private void initMocks(String path, String[] operations){
         serviceReference = mock(ServiceReference.class);
-        Bundle bundle = mock(Bundle.class);
-        BundleContext bundleContext = mock(BundleContext.class);
         resourceAccessGate = mock(ResourceAccessGate.class);
 
-        when(serviceReference.getBundle()).thenReturn(bundle);
-        when(bundle.getBundleContext()).thenReturn(bundleContext);
-        when(bundleContext.getService(serviceReference)).thenReturn(resourceAccessGate);
-
-        when(resourceAccessGate.hasReadRestrictions(Mockito.any(ResourceResolver.class))).thenReturn(true);
-        when(resourceAccessGate.hasCreateRestrictions(Mockito.any(ResourceResolver.class))).thenReturn(true);
-        when(resourceAccessGate.hasUpdateRestrictions(Mockito.any(ResourceResolver.class))).thenReturn(true);
-        when(resourceAccessGate.hasOrderChildrenRestrictions(Mockito.any(ResourceResolver.class))).thenReturn(true);
+        when(resourceAccessGate.hasReadRestrictions(Mockito.any())).thenReturn(true);
+        when(resourceAccessGate.hasCreateRestrictions(Mockito.any())).thenReturn(true);
+        when(resourceAccessGate.hasUpdateRestrictions(Mockito.any())).thenReturn(true);
+        when(resourceAccessGate.hasOrderChildrenRestrictions(Mockito.any())).thenReturn(true);
 
         when(serviceReference.getProperty(ResourceAccessGate.PATH)).thenReturn(path);
         when(serviceReference.getProperty(ResourceAccessGate.OPERATIONS)).thenReturn(operations);
 
-        ((ProviderResourceAccessSecurityImpl) resourceAccessSecurity).bindResourceAccessGate(serviceReference);
+        ComponentContext context = mock(ComponentContext.class);
+        when(context.locateService(Mockito.anyString(), Mockito.eq(serviceReference))).thenReturn(resourceAccessGate);
+        resourceAccessSecurity = new ProviderResourceAccessSecurityImpl(Collections.singletonList(serviceReference), context);
     }
-
-
 
 }
