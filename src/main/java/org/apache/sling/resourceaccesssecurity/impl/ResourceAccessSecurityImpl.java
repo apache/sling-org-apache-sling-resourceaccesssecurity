@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.sling.api.resource.Resource;
@@ -40,7 +42,7 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
 
     private final boolean defaultAllowIfNoGateMatches;
 
-    public ResourceAccessSecurityImpl(final boolean defaultAllowIfNoGateMatches, List<ServiceReference<ResourceAccessGate>> resourceAccessGateRefs,
+    protected ResourceAccessSecurityImpl(final boolean defaultAllowIfNoGateMatches, List<ServiceReference<ResourceAccessGate>> resourceAccessGateRefs,
             ComponentContext componentContext, String resourceAccessGateReferenceName) {
         this.defaultAllowIfNoGateMatches = defaultAllowIfNoGateMatches;
         // sort from highest ranked service to lowest ranked (opposite of default sorting of ServiceReference)
@@ -59,7 +61,7 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
         // a good idea
         //
         final List<ResourceAccessGateHandler> handlers = allHandlers;
-        if (handlers.size() > 0) {
+        if (!handlers.isEmpty()) {
 
             final Iterator<ResourceAccessGateHandler> iter = handlers.iterator();
             return new Iterator<ResourceAccessGateHandler>() {
@@ -135,14 +137,12 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
                         accessGatesForReadValues = null;
                     } else {
                         if (accessGatesForReadValues == null) {
-                            accessGatesForReadValues = new ArrayList<ResourceAccessGate>();
+                            accessGatesForReadValues = new ArrayList<>();
                         }
                         accessGatesForReadValues.add(resourceAccessGateHandler.getResourceAccessGate());
                     }
                 }
-                if (finalGateResult == null) {
-                    finalGateResult = gateResult;
-                } else if (finalGateResult != GateResult.GRANTED && gateResult != GateResult.CANT_DECIDE) {
+                if (finalGateResult == null || finalGateResult == GateResult.DENIED) {
                     finalGateResult = gateResult;
                 }
                 // stop checking if the operation is final and the result not GateResult.CANT_DECIDE
@@ -177,11 +177,9 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
         return returnValue;
     }
 
-    
-    @Override
-    public boolean canOrderChildren(Resource resource) {
+    private boolean canDoOperation(ResourceAccessGate.Operation operation, String path, Predicate<ResourceAccessGate> gatePredicate, Function<ResourceAccessGate, GateResult> gateResultFilter) {
         final Iterator<ResourceAccessGateHandler> handlers = getMatchingResourceAccessGateHandlerIterator(
-                resource.getPath(), ResourceAccessGate.Operation.ORDER_CHILDREN);
+                path, operation);
         boolean result = false;
         if ( handlers != null ) {
             GateResult finalGateResult = null;
@@ -191,191 +189,48 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
                 noGateMatched = false;
                 final ResourceAccessGateHandler resourceAccessGateHandler  = handlers.next();
 
-                final GateResult gateResult = !resourceAccessGateHandler
-                        .getResourceAccessGate().hasOrderChildrenRestrictions(resource.getResourceResolver()) ? GateResult.GRANTED
-                        : resourceAccessGateHandler.getResourceAccessGate()
-                                .canOrderChildren(resource);
-                if (finalGateResult == null) {
-                    finalGateResult = gateResult;
-                } else if (finalGateResult != GateResult.GRANTED && gateResult != GateResult.CANT_DECIDE) {
+                final GateResult gateResult = !gatePredicate.test(resourceAccessGateHandler.getResourceAccessGate()) ? GateResult.GRANTED
+                        : gateResultFilter.apply(resourceAccessGateHandler.getResourceAccessGate());
+                if (finalGateResult == null || finalGateResult == GateResult.DENIED) {
                     finalGateResult = gateResult;
                 }
                 if (finalGateResult == GateResult.GRANTED || gateResult != GateResult.CANT_DECIDE && 
-                        resourceAccessGateHandler.isFinalOperation(ResourceAccessGate.Operation.ORDER_CHILDREN)) {
+                        resourceAccessGateHandler.isFinalOperation(operation)) {
                     break;
                 }
             }
 
-            if ( finalGateResult == GateResult.GRANTED ) {
-                result = true;
-            } else if ( finalGateResult == GateResult.DENIED ) {
-                result = false;
-            } else if ( noGateMatched && this.defaultAllowIfNoGateMatches )
-            {
+            if ( finalGateResult == GateResult.GRANTED || (noGateMatched && this.defaultAllowIfNoGateMatches)) {
                 result = true;
             }
         }
         return result;
     }
+    
+    
+    @Override
+    public boolean canOrderChildren(Resource resource) {
+        return canDoOperation(ResourceAccessGate.Operation.ORDER_CHILDREN, resource.getPath(), gate -> gate.hasOrderChildrenRestrictions(resource.getResourceResolver()), gate -> gate.canOrderChildren(resource));
+    }
 
     @Override
-    public boolean canCreate(final String path,
-            final ResourceResolver resolver) {
-        final Iterator<ResourceAccessGateHandler> handlers = getMatchingResourceAccessGateHandlerIterator(
-                path, ResourceAccessGate.Operation.CREATE);
-        boolean result = false;
-        if ( handlers != null ) {
-            GateResult finalGateResult = null;
-            boolean noGateMatched = true;
-
-            while ( handlers.hasNext() ) {
-                noGateMatched = false;
-                final ResourceAccessGateHandler resourceAccessGateHandler  = handlers.next();
-
-                final GateResult gateResult = !resourceAccessGateHandler
-                        .getResourceAccessGate().hasCreateRestrictions(resolver) ? GateResult.GRANTED
-                        : resourceAccessGateHandler.getResourceAccessGate()
-                                .canCreate(path, resolver);
-                if (finalGateResult == null) {
-                    finalGateResult = gateResult;
-                } else if (finalGateResult != GateResult.GRANTED && gateResult != GateResult.CANT_DECIDE) {
-                    finalGateResult = gateResult;
-                }
-                if (finalGateResult == GateResult.GRANTED || gateResult != GateResult.CANT_DECIDE && 
-                        resourceAccessGateHandler.isFinalOperation(ResourceAccessGate.Operation.CREATE)) {
-                    break;
-                }
-            }
-
-            if ( finalGateResult == GateResult.GRANTED ) {
-                result = true;
-            } else if ( finalGateResult == GateResult.DENIED ) {
-                result = false;
-            } else if ( noGateMatched && this.defaultAllowIfNoGateMatches )
-            {
-                result = true;
-            }
-        }
-        return result;
+    public boolean canCreate(final String path, final ResourceResolver resolver) {
+        return canDoOperation(ResourceAccessGate.Operation.CREATE, path, gate -> gate.hasCreateRestrictions(resolver), gate -> gate.canCreate(path, resolver));
     }
 
     @Override
     public boolean canUpdate(final Resource resource) {
-        final Iterator<ResourceAccessGateHandler> handlers = getMatchingResourceAccessGateHandlerIterator(
-                resource.getPath(), ResourceAccessGate.Operation.UPDATE);
-        boolean result = this.defaultAllowIfNoGateMatches;
-        if ( handlers != null ) {
-            GateResult finalGateResult = null;
-            boolean noGateMatched = true;
-
-            while ( handlers.hasNext() ) {
-                noGateMatched = false;
-                final ResourceAccessGateHandler resourceAccessGateHandler  = handlers.next();
-
-                final GateResult gateResult = !resourceAccessGateHandler
-                        .getResourceAccessGate().hasUpdateRestrictions(resource.getResourceResolver()) ? GateResult.GRANTED
-                        : resourceAccessGateHandler.getResourceAccessGate()
-                                .canUpdate(resource);
-                if (finalGateResult == null) {
-                    finalGateResult = gateResult;
-                } else if (finalGateResult != GateResult.GRANTED && gateResult != GateResult.CANT_DECIDE) {
-                    finalGateResult = gateResult;
-                }
-                if (finalGateResult == GateResult.GRANTED || gateResult != GateResult.CANT_DECIDE && 
-                        resourceAccessGateHandler.isFinalOperation(ResourceAccessGate.Operation.UPDATE)) {
-                    break;
-                }
-            }
-
-            if ( finalGateResult == GateResult.GRANTED ) {
-                result = true;
-            } else if ( finalGateResult == GateResult.DENIED ) {
-                result = false;
-            } else if ( noGateMatched && this.defaultAllowIfNoGateMatches )
-            {
-                result = true;
-            }
-        }
-        return result;
+        return canDoOperation(ResourceAccessGate.Operation.UPDATE, resource.getPath(), gate -> gate.hasUpdateRestrictions(resource.getResourceResolver()), gate -> gate.canUpdate(resource));
     }
 
     @Override
     public boolean canDelete(final Resource resource) {
-        final Iterator<ResourceAccessGateHandler> handlers = getMatchingResourceAccessGateHandlerIterator(
-                resource.getPath(), ResourceAccessGate.Operation.DELETE);
-        boolean result = this.defaultAllowIfNoGateMatches;
-        if ( handlers != null ) {
-            GateResult finalGateResult = null;
-            boolean noGateMatched = true;
-
-            while ( handlers.hasNext() ) {
-                noGateMatched = false;
-                final ResourceAccessGateHandler resourceAccessGateHandler  = handlers.next();
-
-                final GateResult gateResult = !resourceAccessGateHandler
-                        .getResourceAccessGate().hasDeleteRestrictions(resource.getResourceResolver()) ? GateResult.GRANTED
-                        : resourceAccessGateHandler.getResourceAccessGate()
-                                .canDelete(resource);
-                if (finalGateResult == null) {
-                    finalGateResult = gateResult;
-                } else if (finalGateResult != GateResult.GRANTED && gateResult != GateResult.CANT_DECIDE) {
-                    finalGateResult = gateResult;
-                }
-                if (finalGateResult == GateResult.GRANTED || gateResult != GateResult.CANT_DECIDE && 
-                        resourceAccessGateHandler.isFinalOperation(ResourceAccessGate.Operation.DELETE)) {
-                    break;
-                }
-            }
-
-            if ( finalGateResult == GateResult.GRANTED ) {
-                result = true;
-            } else if ( finalGateResult == GateResult.DENIED ) {
-                result = false;
-            } else if ( noGateMatched && this.defaultAllowIfNoGateMatches )
-            {
-                result = true;
-            }
-        }
-        return result;
+        return canDoOperation(ResourceAccessGate.Operation.DELETE, resource.getPath(), gate -> gate.hasDeleteRestrictions(resource.getResourceResolver()), gate -> gate.canDelete(resource));
     }
 
     @Override
     public boolean canExecute(final Resource resource) {
-        final Iterator<ResourceAccessGateHandler> handlers = getMatchingResourceAccessGateHandlerIterator(
-                resource.getPath(), ResourceAccessGate.Operation.EXECUTE);
-        boolean result = this.defaultAllowIfNoGateMatches;
-        if ( handlers != null ) {
-            GateResult finalGateResult = null;
-            boolean noGateMatched = true;
-
-            while ( handlers.hasNext() ) {
-                noGateMatched = false;
-                final ResourceAccessGateHandler resourceAccessGateHandler  = handlers.next();
-
-                final GateResult gateResult = !resourceAccessGateHandler
-                        .getResourceAccessGate().hasExecuteRestrictions(resource.getResourceResolver()) ? GateResult.GRANTED
-                        : resourceAccessGateHandler.getResourceAccessGate()
-                                .canExecute(resource);
-                if (finalGateResult == null) {
-                    finalGateResult = gateResult;
-                } else if (finalGateResult != GateResult.GRANTED && gateResult != GateResult.CANT_DECIDE) {
-                    finalGateResult = gateResult;
-                }
-                if (finalGateResult == GateResult.GRANTED || gateResult != GateResult.CANT_DECIDE && resourceAccessGateHandler.isFinalOperation(ResourceAccessGate.Operation.EXECUTE)) {
-                    break;
-                }
-            }
-
-            if ( finalGateResult == GateResult.GRANTED ) {
-                result = true;
-            } else if ( finalGateResult == GateResult.DENIED ) {
-                result = false;
-            } else if ( noGateMatched && this.defaultAllowIfNoGateMatches )
-            {
-                result = true;
-            }
-        }
-        return result;
+        return canDoOperation(ResourceAccessGate.Operation.EXECUTE, resource.getPath(), gate -> gate.hasExecuteRestrictions(resource.getResourceResolver()), gate -> gate.canExecute(resource));
     }
 
     @Override

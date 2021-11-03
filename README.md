@@ -6,4 +6,4 @@
 
 This module is part of the [Apache Sling](https://sling.apache.org) project.
 
-This bundle provides in implementation of the ResourceAccessSecurity
+This bundle provides an implementation of the [`ResourceAccessSecurity` service](https://sling.apache.org/documentation/bundles/resource-access-security.html).
