@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
@@ -31,6 +32,7 @@ import org.apache.sling.api.security.ResourceAccessSecurity;
 import org.apache.sling.resourceaccesssecurity.ResourceAccessGate;
 import org.apache.sling.resourceaccesssecurity.ResourceAccessGate.GateResult;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.ComponentContext;
 
 public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecurity {
 
@@ -38,9 +40,13 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
 
     private final boolean defaultAllowIfNoGateMatches;
 
-    public ResourceAccessSecurityImpl(final boolean defaultAllowIfNoGateMatches) {
+    public ResourceAccessSecurityImpl(final boolean defaultAllowIfNoGateMatches, List<ServiceReference<ResourceAccessGate>> resourceAccessGateRefs,
+            ComponentContext componentContext, String resourceAccessGateReferenceName) {
         this.defaultAllowIfNoGateMatches = defaultAllowIfNoGateMatches;
+        // sort from highest ranked service to lowest ranked (opposite of default sorting of ServiceReference)
+        this.allHandlers = resourceAccessGateRefs.stream().map(ref -> new ResourceAccessGateHandler(ref, componentContext.locateService(resourceAccessGateReferenceName, ref))).sorted(Collections.reverseOrder()).collect(Collectors.toList());
     }
+
 
     /**
      * This method returns either an iterator delivering the matching handlers
@@ -409,32 +415,5 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
         }
 
         return returnValue;
-    }
-
-    /**
-     * Add a new resource access gate
-     */
-    protected void bindResourceAccessGate(final ServiceReference ref) {
-        synchronized ( this ) {
-            final List<ResourceAccessGateHandler> newList = new ArrayList<ResourceAccessGateHandler>(this.allHandlers);
-
-            final ResourceAccessGateHandler h = new ResourceAccessGateHandler(ref);
-            newList.add(h);
-            Collections.sort(newList);
-            this.allHandlers = newList;
-        }
-    }
-
-    /**
-     * Remove a resource access gate
-     */
-    protected void unbindResourceAccessGate(final ServiceReference ref) {
-        synchronized ( this ) {
-            final List<ResourceAccessGateHandler> newList = new ArrayList<ResourceAccessGateHandler>(this.allHandlers);
-
-            final ResourceAccessGateHandler h = new ResourceAccessGateHandler(ref);
-            newList.remove(h);
-            this.allHandlers = newList;
-        }
     }
 }

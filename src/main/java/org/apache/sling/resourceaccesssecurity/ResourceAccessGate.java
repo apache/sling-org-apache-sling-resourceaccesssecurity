@@ -21,8 +21,8 @@ package org.apache.sling.resourceaccesssecurity;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.security.AccessSecurityException;
-
-import aQute.bnd.annotation.ConsumerType;
+import org.apache.sling.resourceaccesssecurity.ResourceAccessGate.GateResult;
+import org.osgi.annotation.versioning.ConsumerType;
 
 /**
  * The <code>ResourceAccessGate</code> defines a service API which might be used
@@ -97,17 +97,17 @@ public interface ResourceAccessGate {
     String PATH = "path";
 
     /**
-     * The name of the service registration property containing the operations
+     * The name of the (multi-value) service registration property containing the operations
      * for which the service should be called, defaults to all the operations
      * (value is "operations").
      */
     String OPERATIONS = "operations";
 
     /**
-     * The name of the service registration property containing the operations
+     * The name of the (multi-value) service registration property containing the operations
      * for which the service should be called and no further service should be
      * called after this, except the services returns DONTCARE as result,
-     * default is empty (non of them are final) (value is "finaloperations").
+     * default is empty (none of them are final) (value is "finaloperations").
      */
     String FINALOPERATIONS = "finaloperations";
 

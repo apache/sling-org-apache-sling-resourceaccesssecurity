@@ -18,25 +18,28 @@
  */
 package org.apache.sling.resourceaccesssecurity.impl;
 
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Property;
-import org.apache.felix.scr.annotations.Reference;
-import org.apache.felix.scr.annotations.ReferenceCardinality;
-import org.apache.felix.scr.annotations.ReferencePolicy;
-import org.apache.felix.scr.annotations.Service;
+import java.util.List;
+
 import org.apache.sling.api.security.ResourceAccessSecurity;
 import org.apache.sling.resourceaccesssecurity.ResourceAccessGate;
+import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.ComponentContext;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
-@Component
-@Service(value=ResourceAccessSecurity.class)
-@Property(name=ResourceAccessSecurity.CONTEXT, value=ResourceAccessSecurity.PROVIDER_CONTEXT)
-@Reference(name="ResourceAccessGate", referenceInterface=ResourceAccessGate.class,
-           cardinality=ReferenceCardinality.MANDATORY_MULTIPLE,
-           policy=ReferencePolicy.DYNAMIC,
-           target="(" + ResourceAccessGate.CONTEXT + "=" + ResourceAccessGate.PROVIDER_CONTEXT + ")")
+@Component(service = ResourceAccessSecurity.class, properties = ResourceAccessSecurity.CONTEXT + "=" + ResourceAccessSecurity.PROVIDER_CONTEXT)
 public class ProviderResourceAccessSecurityImpl extends ResourceAccessSecurityImpl {
 
-    public ProviderResourceAccessSecurityImpl() {
-        super(false);
+    private static final String RESOURCE_ACCESS_GATE_REFERENCE_NAME = "resourceAccessGates";
+
+    @Activate
+    public ProviderResourceAccessSecurityImpl(
+            @Reference(name = RESOURCE_ACCESS_GATE_REFERENCE_NAME, cardinality = ReferenceCardinality.AT_LEAST_ONE, policyOption = ReferencePolicyOption.GREEDY, target ="(" + ResourceAccessGate.CONTEXT + "=" + ResourceAccessGate.PROVIDER_CONTEXT + ")") 
+            List<ServiceReference<ResourceAccessGate>> resourceAccessGates,
+            ComponentContext componentContext) {
+        super(false, resourceAccessGates, componentContext, RESOURCE_ACCESS_GATE_REFERENCE_NAME);
     }
 }
