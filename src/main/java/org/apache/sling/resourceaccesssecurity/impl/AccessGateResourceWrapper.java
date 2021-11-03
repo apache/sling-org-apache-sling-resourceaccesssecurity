@@ -26,6 +26,7 @@ import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceWrapper;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.resourceaccesssecurity.ResourceAccessGate;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The <code>AccessGateResourceWrapper</code> wraps a <code>Resource</code> and
@@ -36,7 +37,6 @@ import org.apache.sling.resourceaccesssecurity.ResourceAccessGate;
  */
 public class AccessGateResourceWrapper extends ResourceWrapper {
 
-    private final List<ResourceAccessGate> accessGatesForReadValues;
     private final boolean modifiable;
 
     /**
@@ -49,11 +49,10 @@ public class AccessGateResourceWrapper extends ResourceWrapper {
      *      the list is <code>null</code> or empty there are no read restrictions
      * @param modifiable if <code>true</code> the resource can be updated
      */
-    public AccessGateResourceWrapper(final Resource resource,
+    public AccessGateResourceWrapper(@NotNull final Resource resource,
                                      final List<ResourceAccessGate> accessGatesForReadForValues,
                                      final boolean modifiable ) {
         super( resource );
-        this.accessGatesForReadValues = accessGatesForReadForValues;
         this.modifiable = modifiable;
     }
 
@@ -63,7 +62,7 @@ public class AccessGateResourceWrapper extends ResourceWrapper {
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <AdapterType> AdapterType adaptTo(Class<AdapterType> type) {
+    public <AdapterType> AdapterType adaptTo(@NotNull Class<AdapterType> type) {
         // we do not support the deprecated PersistableValueMap
         AdapterType adapter = getResource().adaptTo(type);
 
@@ -76,7 +75,7 @@ public class AccessGateResourceWrapper extends ResourceWrapper {
                 adapter = (AdapterType) new ReadOnlyValueMapWrapper((Map) adapter);
             }
         }
-
+        // TODO: restrict reading of certain values
 
         return adapter;
 

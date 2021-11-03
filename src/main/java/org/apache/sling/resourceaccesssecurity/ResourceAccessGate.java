@@ -21,7 +21,6 @@ package org.apache.sling.resourceaccesssecurity;
 import org.apache.sling.api.resource.Resource;
 import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.security.AccessSecurityException;
-import org.apache.sling.resourceaccesssecurity.ResourceAccessGate.GateResult;
 import org.osgi.annotation.versioning.ConsumerType;
 
 /**
