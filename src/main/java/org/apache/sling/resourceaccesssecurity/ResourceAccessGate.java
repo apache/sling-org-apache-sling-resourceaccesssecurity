@@ -128,7 +128,7 @@ public interface ResourceAccessGate {
 
     public enum Operation {
         READ("read"), CREATE("create"), UPDATE("update"), DELETE("delete"), EXECUTE(
-                "execute");
+                "execute"), ORDER_CHILDREN("order-children");
 
         private String text;
 
@@ -158,6 +158,10 @@ public interface ResourceAccessGate {
 
     public GateResult canCreate(String absPathName,
             ResourceResolver resourceResolver);
+
+    public default GateResult canOrderChildren(Resource resource) {
+        return GateResult.CANT_DECIDE;
+    }
 
     public GateResult canUpdate(Resource resource);
 
@@ -198,6 +202,10 @@ public interface ResourceAccessGate {
     public boolean hasReadRestrictions(ResourceResolver resourceResolver);
 
     public boolean hasCreateRestrictions(ResourceResolver resourceResolver);
+
+    public default boolean hasOrderChildrenRestrictions(ResourceResolver resourceResolver) {
+        return true;
+    }
 
     public boolean hasUpdateRestrictions(ResourceResolver resourceResolver);
 

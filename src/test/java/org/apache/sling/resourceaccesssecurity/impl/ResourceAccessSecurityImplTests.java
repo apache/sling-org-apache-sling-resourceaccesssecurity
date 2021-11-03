@@ -169,6 +169,26 @@ public class ResourceAccessSecurityImplTests {
         verify(valueMap, times(0)).put("modified", "value");
     }
 
+    @Test
+    public void testCanOrderChildren() {
+        initMocks("/content", new String[] { "order-children" } );
+
+        Resource resource = mock(Resource.class);
+        when(resource.getPath()).thenReturn("/content");
+        when(resourceAccessGate.canOrderChildren(resource)).thenReturn(ResourceAccessGate.GateResult.GRANTED);
+        assertTrue(resourceAccessSecurity.canOrderChildren(resource));
+    }
+
+    @Test
+    public void testCannotOrderChildren() {
+        initMocks("/content", new String[] { "order-children" } );
+
+        Resource resource = mock(Resource.class);
+        when(resource.getPath()).thenReturn("/content");
+        when(resourceAccessGate.canOrderChildren(resource)).thenReturn(ResourceAccessGate.GateResult.DENIED);
+        assertFalse(resourceAccessSecurity.canOrderChildren(resource));
+    }
+
     private void initMocks(String path, String[] operations){
         serviceReference = mock(ServiceReference.class);
         Bundle bundle = mock(Bundle.class);
@@ -182,6 +202,7 @@ public class ResourceAccessSecurityImplTests {
         when(resourceAccessGate.hasReadRestrictions(Mockito.any(ResourceResolver.class))).thenReturn(true);
         when(resourceAccessGate.hasCreateRestrictions(Mockito.any(ResourceResolver.class))).thenReturn(true);
         when(resourceAccessGate.hasUpdateRestrictions(Mockito.any(ResourceResolver.class))).thenReturn(true);
+        when(resourceAccessGate.hasOrderChildrenRestrictions(Mockito.any(ResourceResolver.class))).thenReturn(true);
 
         when(serviceReference.getProperty(ResourceAccessGate.PATH)).thenReturn(path);
         when(serviceReference.getProperty(ResourceAccessGate.OPERATIONS)).thenReturn(operations);
