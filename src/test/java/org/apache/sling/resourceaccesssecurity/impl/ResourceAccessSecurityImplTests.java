@@ -19,9 +19,9 @@
 package org.apache.sling.resourceaccesssecurity.impl;
 
 
-import junit.framework.TestCase;
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.Resource;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.security.ResourceAccessSecurity;
 import org.apache.sling.resourceaccesssecurity.ResourceAccessGate;
@@ -179,9 +179,9 @@ public class ResourceAccessSecurityImplTests {
         when(bundle.getBundleContext()).thenReturn(bundleContext);
         when(bundleContext.getService(serviceReference)).thenReturn(resourceAccessGate);
 
-        when(resourceAccessGate.hasReadRestrictions(Mockito.any())).thenReturn(true);
-        when(resourceAccessGate.hasCreateRestrictions(Mockito.any())).thenReturn(true);
-        when(resourceAccessGate.hasUpdateRestrictions(Mockito.any())).thenReturn(true);
+        when(resourceAccessGate.hasReadRestrictions(Mockito.any(ResourceResolver.class))).thenReturn(true);
+        when(resourceAccessGate.hasCreateRestrictions(Mockito.any(ResourceResolver.class))).thenReturn(true);
+        when(resourceAccessGate.hasUpdateRestrictions(Mockito.any(ResourceResolver.class))).thenReturn(true);
 
         when(serviceReference.getProperty(ResourceAccessGate.PATH)).thenReturn(path);
         when(serviceReference.getProperty(ResourceAccessGate.OPERATIONS)).thenReturn(operations);
