@@ -27,6 +27,7 @@ import org.apache.sling.api.security.ResourceAccessSecurity;
 import org.apache.sling.resourceaccesssecurity.ResourceAccessGate;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -155,7 +156,7 @@ public class ResourceAccessSecurityImplTests {
         when(resource.getPath()).thenReturn("/content");
 
         ModifiableValueMap valueMap = mock(ModifiableValueMap.class);
-        when(resource.adaptTo(ModifiableValueMap.class)).thenReturn(valueMap);
+        when(resource.adaptTo(ValueMap.class)).thenReturn(valueMap);
 
         when(resourceAccessGate.canRead(resource)).thenReturn(ResourceAccessGate.GateResult.GRANTED);
         when(resourceAccessGate.canUpdate(resource)).thenReturn(ResourceAccessGate.GateResult.DENIED);
@@ -177,6 +178,10 @@ public class ResourceAccessSecurityImplTests {
         when(serviceReference.getBundle()).thenReturn(bundle);
         when(bundle.getBundleContext()).thenReturn(bundleContext);
         when(bundleContext.getService(serviceReference)).thenReturn(resourceAccessGate);
+
+        when(resourceAccessGate.hasReadRestrictions(Mockito.any())).thenReturn(true);
+        when(resourceAccessGate.hasCreateRestrictions(Mockito.any())).thenReturn(true);
+        when(resourceAccessGate.hasUpdateRestrictions(Mockito.any())).thenReturn(true);
 
         when(serviceReference.getProperty(ResourceAccessGate.PATH)).thenReturn(path);
         when(serviceReference.getProperty(ResourceAccessGate.OPERATIONS)).thenReturn(operations);

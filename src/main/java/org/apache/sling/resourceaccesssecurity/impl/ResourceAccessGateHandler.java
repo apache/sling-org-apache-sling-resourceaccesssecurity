@@ -54,10 +54,9 @@ public class ResourceAccessGateHandler implements Comparable<ResourceAccessGateH
         }
 
         // extract the service property "operations"
-        final String ops = PropertiesUtil.toString( resourceAccessGateRef.getProperty(ResourceAccessGate.OPERATIONS), null );
-        if ( ops != null && ops.length() > 0 ) {
-            final String[] opsArray = ops.split( "," );
-            for (final String opAsString : opsArray) {
+        final String ops[] = PropertiesUtil.toStringArray( resourceAccessGateRef.getProperty(ResourceAccessGate.OPERATIONS) );
+        if ( ops != null && ops.length > 0 ) {
+            for (final String opAsString : ops) {
                 final ResourceAccessGate.Operation operation = ResourceAccessGate.Operation.fromString(opAsString);
                 if ( operation != null ) {
                     operations.add(operation);
