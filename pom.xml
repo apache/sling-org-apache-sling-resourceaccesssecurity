@@ -31,7 +31,7 @@
 
     <name>Apache Sling Resource Access Security</name>
     <description>
-        This bundle provides in implementation of the ResourceAccessSecurity service
+        This bundle provides an implementation of the ResourceAccessSecurity service
     </description>
 
     <scm>
