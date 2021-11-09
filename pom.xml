@@ -23,11 +23,11 @@
         <groupId>org.apache.sling</groupId>
         <artifactId>sling-bundle-parent</artifactId>
         <version>46</version>
-        <relativePath/>
+        <relativePath />
     </parent>
 
     <artifactId>org.apache.sling.resourceaccesssecurity</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.1.0</version>
 
     <name>Apache Sling Resource Access Security</name>
     <description>
@@ -38,7 +38,8 @@
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-resourceaccesssecurity.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-resourceaccesssecurity.git</developerConnection>
         <url>https://gitbox.apache.org/repos/asf?p=sling-org-apache-sling-resourceaccesssecurity.git</url>
-    </scm>
+      <tag>org.apache.sling.resourceaccesssecurity-1.1.0</tag>
+  </scm>
 
     <properties>
         <site.javadoc.exclude>**.internal.**</site.javadoc.exclude>
