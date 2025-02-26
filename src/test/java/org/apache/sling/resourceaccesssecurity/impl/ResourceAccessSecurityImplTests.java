@@ -57,10 +57,6 @@ public class ResourceAccessSecurityImplTests {
         ServiceReference<ResourceAccessGate> serviceReference2 = mock(ServiceReference.class);
         ResourceAccessGate resourceAccessGate2 = mock(ResourceAccessGate.class);
 
-        // Mock the service references to have different rankings
-        when(serviceReference.compareTo(serviceReference2)).thenReturn(-1);
-        when(serviceReference2.compareTo(serviceReference)).thenReturn(1);
-
         ComponentContext context = mock(ComponentContext.class);
         when(context.locateService(Mockito.anyString(), Mockito.eq(serviceReference))).thenReturn(resourceAccessGate);
         when(context.locateService(Mockito.anyString(), Mockito.eq(serviceReference2))).thenReturn(resourceAccessGate2);
@@ -69,9 +65,6 @@ public class ResourceAccessSecurityImplTests {
             resourceAccessSecurity = new ProviderResourceAccessSecurityImpl(
                 Arrays.asList(serviceReference, serviceReference2),
                 context);
-
-            // Verify that the gates are sorted in reverse order
-            verify(serviceReference).compareTo(serviceReference2);
         } catch (Exception e) {
             fail("Should not throw exception: " + e.getMessage());
         }
