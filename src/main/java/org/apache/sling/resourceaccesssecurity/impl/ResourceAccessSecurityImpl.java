@@ -46,7 +46,7 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
             ComponentContext componentContext, String resourceAccessGateReferenceName) {
         this.defaultAllowIfNoGateMatches = defaultAllowIfNoGateMatches;
         // sort from highest ranked service to lowest ranked (opposite of default sorting of ServiceReference)
-        this.allHandlers = resourceAccessGateRefs.stream().map(ref -> new ResourceAccessGateHandler(ref, componentContext.locateService(resourceAccessGateReferenceName, ref))).sorted(Collections.reverseOrder()).collect(Collectors.toList());
+        this.allHandlers = resourceAccessGateRefs.stream().sorted(Collections.reverseOrder()).map(ref -> new ResourceAccessGateHandler(ref, componentContext.locateService(resourceAccessGateReferenceName, ref))).collect(Collectors.toList());
     }
 
 
