@@ -44,7 +44,7 @@ import org.osgi.annotation.versioning.ConsumerType;
  * called ("read,create,update,delete,execute", default all of them)</li>
  * <li><b>finaloperations</b>: set of operations on which the service answer is
  * final and no further service should be called (default none of them), except
- * the GateResult is {@link GateResult.DONTCARE}</li>
+ * the GateResult is {@link GateResult#CANT_DECIDE}</li>
  * </ul>
  *
  * The resource access gate can either have the context {@link #PROVIDER_CONTEXT},
@@ -116,7 +116,7 @@ public interface ResourceAccessGate {
      * <ul>
      * <li>GRANTED: means no restrictions</li>
      * <li>DENIED: means no permission for the requested action</li>
-     * <li>DONTCARE: means that the implementation of the service has no
+     * <li>CANT_DECIDE: means that the implementation of the service has no
      * information or can't decide and therefore neither can't grant or deny
      * access</li>
      * </ul>
