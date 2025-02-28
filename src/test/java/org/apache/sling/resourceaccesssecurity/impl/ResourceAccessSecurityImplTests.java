@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
+import java.util.Arrays;
 
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.Resource;
@@ -38,12 +39,36 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
+import static org.junit.Assert.fail;
 
 public class ResourceAccessSecurityImplTests {
 
     ServiceReference<ResourceAccessGate> serviceReference;
     ResourceAccessSecurity resourceAccessSecurity;
     ResourceAccessGate resourceAccessGate;
+
+
+    @Test
+    public void testInitWithMultipleGates() {
+
+        ServiceReference<ResourceAccessGate> serviceReference = mock(ServiceReference.class);
+        ResourceAccessGate resourceAccessGate = mock(ResourceAccessGate.class);
+
+        ServiceReference<ResourceAccessGate> serviceReference2 = mock(ServiceReference.class);
+        ResourceAccessGate resourceAccessGate2 = mock(ResourceAccessGate.class);
+
+        ComponentContext context = mock(ComponentContext.class);
+        when(context.locateService(Mockito.anyString(), Mockito.eq(serviceReference))).thenReturn(resourceAccessGate);
+        when(context.locateService(Mockito.anyString(), Mockito.eq(serviceReference2))).thenReturn(resourceAccessGate2);
+
+        try {
+            resourceAccessSecurity = new ProviderResourceAccessSecurityImpl(
+                Arrays.asList(serviceReference, serviceReference2),
+                context);
+        } catch (Exception e) {
+            fail("Should not throw exception: " + e.getMessage());
+        }
+    }
 
     @Test
     public void testCanUpdate(){
