@@ -122,12 +122,18 @@ public interface ResourceAccessGate {
      * </ul>
      */
     public enum GateResult {
-        GRANTED, DENIED, CANT_DECIDE
+        GRANTED,
+        DENIED,
+        CANT_DECIDE
     };
 
     public enum Operation {
-        READ("read"), CREATE("create"), UPDATE("update"), DELETE("delete"), EXECUTE(
-                "execute"), ORDER_CHILDREN("order-children");
+        READ("read"),
+        CREATE("create"),
+        UPDATE("update"),
+        DELETE("delete"),
+        EXECUTE("execute"),
+        ORDER_CHILDREN("order-children");
 
         private String text;
 
@@ -155,8 +161,7 @@ public interface ResourceAccessGate {
 
     public GateResult canRead(Resource resource);
 
-    public GateResult canCreate(String absPathName,
-            ResourceResolver resourceResolver);
+    public GateResult canCreate(String absPathName, ResourceResolver resourceResolver);
 
     public default GateResult canOrderChildren(Resource resource) {
         return GateResult.CANT_DECIDE;
@@ -194,8 +199,8 @@ public interface ResourceAccessGate {
      *      took place. This method should never return <code>null</code>
      * @throws AccessSecurityException
      */
-    public String transformQuery(String query, String language,
-            ResourceResolver resourceResolver) throws AccessSecurityException;
+    public String transformQuery(String query, String language, ResourceResolver resourceResolver)
+            throws AccessSecurityException;
 
     /* for convenience (and performance) */
     public boolean hasReadRestrictions(ResourceResolver resourceResolver);
@@ -219,5 +224,4 @@ public interface ResourceAccessGate {
     public boolean canUpdateAllValues(Resource resource);
 
     public boolean canDeleteAllValues(Resource resource);
-
 }

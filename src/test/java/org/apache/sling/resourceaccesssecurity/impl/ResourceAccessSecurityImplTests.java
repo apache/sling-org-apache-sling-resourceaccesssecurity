@@ -18,17 +18,8 @@
  */
 package org.apache.sling.resourceaccesssecurity.impl;
 
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Collections;
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.apache.sling.api.resource.ModifiableValueMap;
 import org.apache.sling.api.resource.Resource;
@@ -39,14 +30,21 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ResourceAccessSecurityImplTests {
 
     ServiceReference<ResourceAccessGate> serviceReference;
     ResourceAccessSecurity resourceAccessSecurity;
     ResourceAccessGate resourceAccessGate;
-
 
     @Test
     public void testInitWithMultipleGates() {
@@ -58,21 +56,22 @@ public class ResourceAccessSecurityImplTests {
         ResourceAccessGate resourceAccessGate2 = mock(ResourceAccessGate.class);
 
         ComponentContext context = mock(ComponentContext.class);
-        when(context.locateService(Mockito.anyString(), Mockito.eq(serviceReference))).thenReturn(resourceAccessGate);
-        when(context.locateService(Mockito.anyString(), Mockito.eq(serviceReference2))).thenReturn(resourceAccessGate2);
+        when(context.locateService(Mockito.anyString(), Mockito.eq(serviceReference)))
+                .thenReturn(resourceAccessGate);
+        when(context.locateService(Mockito.anyString(), Mockito.eq(serviceReference2)))
+                .thenReturn(resourceAccessGate2);
 
         try {
-            resourceAccessSecurity = new ProviderResourceAccessSecurityImpl(
-                Arrays.asList(serviceReference, serviceReference2),
-                context);
+            resourceAccessSecurity =
+                    new ProviderResourceAccessSecurityImpl(Arrays.asList(serviceReference, serviceReference2), context);
         } catch (Exception e) {
             fail("Should not throw exception: " + e.getMessage());
         }
     }
 
     @Test
-    public void testCanUpdate(){
-        initMocks("/content", new String[] { "update"} );
+    public void testCanUpdate() {
+        initMocks("/content", new String[] {"update"});
 
         Resource resource = mock(Resource.class);
         when(resource.getPath()).thenReturn("/content");
@@ -81,8 +80,8 @@ public class ResourceAccessSecurityImplTests {
     }
 
     @Test
-    public void testCannotUpdate(){
-        initMocks("/content", new String[] { "update"} );
+    public void testCannotUpdate() {
+        initMocks("/content", new String[] {"update"});
 
         Resource resource = mock(Resource.class);
         when(resource.getPath()).thenReturn("/content");
@@ -91,8 +90,8 @@ public class ResourceAccessSecurityImplTests {
     }
 
     @Test
-    public void testCannotUpdateWrongPath(){
-        initMocks("/content", new String[] { "update"} );
+    public void testCannotUpdateWrongPath() {
+        initMocks("/content", new String[] {"update"});
 
         Resource resource = mock(Resource.class);
         when(resource.getPath()).thenReturn("/wrongcontent");
@@ -101,10 +100,10 @@ public class ResourceAccessSecurityImplTests {
     }
 
     @Test
-    public void testCanUpdateUsingReadableResource(){
+    public void testCanUpdateUsingReadableResource() {
         // one needs to have also read rights to obtain the resource
 
-        initMocks("/content", new String[] { "read", "update"} );
+        initMocks("/content", new String[] {"read", "update"});
 
         Resource resource = mock(Resource.class);
         when(resource.getPath()).thenReturn("/content");
@@ -118,16 +117,14 @@ public class ResourceAccessSecurityImplTests {
 
         ModifiableValueMap resultValueMap = readableResource.adaptTo(ModifiableValueMap.class);
 
-
         resultValueMap.put("modified", "value");
 
         verify(valueMap, times(1)).put("modified", "value");
     }
 
-
     @Test
-    public void testCannotUpdateUsingReadableResourceIfCannotRead(){
-        initMocks("/content", new String[] { "read", "update"} );
+    public void testCannotUpdateUsingReadableResourceIfCannotRead() {
+        initMocks("/content", new String[] {"read", "update"});
 
         Resource resource = mock(Resource.class);
         when(resource.getPath()).thenReturn("/content");
@@ -139,14 +136,12 @@ public class ResourceAccessSecurityImplTests {
         when(resourceAccessGate.canUpdate(resource)).thenReturn(ResourceAccessGate.GateResult.GRANTED);
         Resource readableResource = resourceAccessSecurity.getReadableResource(resource);
 
-
         assertNull(readableResource);
     }
 
-
     @Test
-    public void testCannotUpdateUsingReadableResourceIfCannotUpdate(){
-        initMocks("/content", new String[] { "read", "update"} );
+    public void testCannotUpdateUsingReadableResourceIfCannotUpdate() {
+        initMocks("/content", new String[] {"read", "update"});
 
         Resource resource = mock(Resource.class);
         when(resource.getPath()).thenReturn("/content");
@@ -163,10 +158,9 @@ public class ResourceAccessSecurityImplTests {
         assertNull(resultValueMap);
     }
 
-
     @Test
-    public void testCannotUpdateAccidentallyUsingReadableResourceIfCannotUpdate(){
-        initMocks("/content", new String[] { "read", "update"} );
+    public void testCannotUpdateAccidentallyUsingReadableResourceIfCannotUpdate() {
+        initMocks("/content", new String[] {"read", "update"});
 
         Resource resource = mock(Resource.class);
         when(resource.getPath()).thenReturn("/content");
@@ -187,7 +181,7 @@ public class ResourceAccessSecurityImplTests {
 
     @Test
     public void testCanOrderChildren() {
-        initMocks("/content", new String[] { "order-children" } );
+        initMocks("/content", new String[] {"order-children"});
 
         Resource resource = mock(Resource.class);
         when(resource.getPath()).thenReturn("/content");
@@ -197,7 +191,7 @@ public class ResourceAccessSecurityImplTests {
 
     @Test
     public void testCannotOrderChildren() {
-        initMocks("/content", new String[] { "order-children" } );
+        initMocks("/content", new String[] {"order-children"});
 
         Resource resource = mock(Resource.class);
         when(resource.getPath()).thenReturn("/content");
@@ -205,7 +199,7 @@ public class ResourceAccessSecurityImplTests {
         assertFalse(resourceAccessSecurity.canOrderChildren(resource));
     }
 
-    private void initMocks(String path, String[] operations){
+    private void initMocks(String path, String[] operations) {
         serviceReference = mock(ServiceReference.class);
         resourceAccessGate = mock(ResourceAccessGate.class);
 
@@ -218,8 +212,9 @@ public class ResourceAccessSecurityImplTests {
         when(serviceReference.getProperty(ResourceAccessGate.OPERATIONS)).thenReturn(operations);
 
         ComponentContext context = mock(ComponentContext.class);
-        when(context.locateService(Mockito.anyString(), Mockito.eq(serviceReference))).thenReturn(resourceAccessGate);
-        resourceAccessSecurity = new ProviderResourceAccessSecurityImpl(Collections.singletonList(serviceReference), context);
+        when(context.locateService(Mockito.anyString(), Mockito.eq(serviceReference)))
+                .thenReturn(resourceAccessGate);
+        resourceAccessSecurity =
+                new ProviderResourceAccessSecurityImpl(Collections.singletonList(serviceReference), context);
     }
-
 }
