@@ -30,21 +30,15 @@ import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 
-@Component(
-        service = ResourceAccessSecurity.class,
-        property = ResourceAccessSecurity.CONTEXT + "=" + ResourceAccessSecurity.PROVIDER_CONTEXT)
+@Component(service = ResourceAccessSecurity.class, property = ResourceAccessSecurity.CONTEXT + "=" + ResourceAccessSecurity.PROVIDER_CONTEXT)
 public class ProviderResourceAccessSecurityImpl extends ResourceAccessSecurityImpl {
 
     private static final String RESOURCE_ACCESS_GATE_REFERENCE_NAME = "resourceAccessGates";
 
     @Activate
     public ProviderResourceAccessSecurityImpl(
-            @Reference(
-                            name = RESOURCE_ACCESS_GATE_REFERENCE_NAME,
-                            cardinality = ReferenceCardinality.AT_LEAST_ONE,
-                            policyOption = ReferencePolicyOption.GREEDY,
-                            target = "(" + ResourceAccessGate.CONTEXT + "=" + ResourceAccessGate.PROVIDER_CONTEXT + ")")
-                    List<ServiceReference<ResourceAccessGate>> resourceAccessGates,
+            @Reference(name = RESOURCE_ACCESS_GATE_REFERENCE_NAME, cardinality = ReferenceCardinality.AT_LEAST_ONE, policyOption = ReferencePolicyOption.GREEDY, target ="(" + ResourceAccessGate.CONTEXT + "=" + ResourceAccessGate.PROVIDER_CONTEXT + ")") 
+            List<ServiceReference<ResourceAccessGate>> resourceAccessGates,
             ComponentContext componentContext) {
         super(false, resourceAccessGates, componentContext, RESOURCE_ACCESS_GATE_REFERENCE_NAME);
     }

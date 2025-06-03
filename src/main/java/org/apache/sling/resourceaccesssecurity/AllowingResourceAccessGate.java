@@ -36,7 +36,8 @@ public abstract class AllowingResourceAccessGate implements ResourceAccessGate {
     }
 
     @Override
-    public GateResult canCreate(final String absPathName, final ResourceResolver resourceResolver) {
+    public GateResult canCreate(final String absPathName,
+            final ResourceResolver resourceResolver) {
         return GateResult.CANT_DECIDE;
     }
 
@@ -80,9 +81,10 @@ public abstract class AllowingResourceAccessGate implements ResourceAccessGate {
         return GateResult.CANT_DECIDE;
     }
 
+    
     @Override
-    public String transformQuery(final String query, final String language, final ResourceResolver resourceResolver)
-            throws AccessSecurityException {
+    public String transformQuery(final String query, final String language,
+            final ResourceResolver resourceResolver) throws AccessSecurityException {
         return query;
     }
 

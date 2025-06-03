@@ -43,17 +43,16 @@ public class AccessGateResourceWrapper extends ResourceWrapper {
      * Creates a new wrapper instance delegating all method calls to the given
      * <code>resource</code>, but intercepts the calls with checks to the
      * applied ResourceAccessGate instances for read and/or update values.
-     *
+     * 
      * @param resource resource to protect
-     * @param accessGatesForReadForValues list of access gates to ask when reading values. If
+     * @param accessGatesForReadForValues list of access gates to ask when reading values. If 
      *      the list is <code>null</code> or empty there are no read restrictions
      * @param modifiable if <code>true</code> the resource can be updated
      */
-    public AccessGateResourceWrapper(
-            @NotNull final Resource resource,
-            final List<ResourceAccessGate> accessGatesForReadForValues,
-            final boolean modifiable) {
-        super(resource);
+    public AccessGateResourceWrapper(@NotNull final Resource resource,
+                                     final List<ResourceAccessGate> accessGatesForReadForValues,
+                                     final boolean modifiable ) {
+        super( resource );
         this.modifiable = modifiable;
     }
 
@@ -70,7 +69,8 @@ public class AccessGateResourceWrapper extends ResourceWrapper {
         if (adapter != null && !modifiable) {
             if (type == ModifiableValueMap.class) {
                 adapter = null;
-            } else if (type == Map.class || type == ValueMap.class) {
+            }
+            else if (type == Map.class || type == ValueMap.class) {
                 // protect also against accidental modifications when changes are done in an adapted map
                 adapter = (AdapterType) new ReadOnlyValueMapWrapper((Map) adapter);
             }
@@ -78,5 +78,9 @@ public class AccessGateResourceWrapper extends ResourceWrapper {
         // TODO: restrict reading of certain values
 
         return adapter;
+
+
     }
+
+
 }

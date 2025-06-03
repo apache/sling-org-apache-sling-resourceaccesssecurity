@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.apache.sling.resourceaccesssecurity.impl;
 
 import java.util.Map;
@@ -26,7 +27,8 @@ import org.apache.sling.api.wrappers.ValueMapDecorator;
 /**
  *  Wrapper class that does protect the underlying map from modifications.
  */
-public class ReadOnlyValueMapWrapper extends ValueMapDecorator implements ValueMap {
+public class ReadOnlyValueMapWrapper extends ValueMapDecorator
+        implements ValueMap {
 
     /**
      * Creates a new wrapper around a given map.

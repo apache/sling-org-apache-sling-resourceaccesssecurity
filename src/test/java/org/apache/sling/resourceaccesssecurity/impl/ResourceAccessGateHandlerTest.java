@@ -47,14 +47,12 @@ public class ResourceAccessGateHandlerTest {
         Assert.assertTrue(gateHandler.isFinalOperation(Operation.READ));
         Assert.assertFalse(gateHandler.isFinalOperation(Operation.EXECUTE));
     }
-
+    
     @Test
     public void testMultiValueProperties() {
         Mockito.when(gateRef.getProperty(ResourceAccessGate.PATH)).thenReturn("/content");
-        Mockito.when(gateRef.getProperty(ResourceAccessGate.OPERATIONS))
-                .thenReturn(new String[] {"read", "update", "invalid"});
-        Mockito.when(gateRef.getProperty(ResourceAccessGate.FINALOPERATIONS))
-                .thenReturn(new String[] {"read", "update", "invalid"});
+        Mockito.when(gateRef.getProperty(ResourceAccessGate.OPERATIONS)).thenReturn(new String[]{"read", "update", "invalid"});
+        Mockito.when(gateRef.getProperty(ResourceAccessGate.FINALOPERATIONS)).thenReturn(new String[]{"read", "update", "invalid"});
         ResourceAccessGateHandler gateHandler = new ResourceAccessGateHandler(gateRef, gate);
         Assert.assertTrue(gateHandler.matches("/content", Operation.READ));
         Assert.assertFalse(gateHandler.matches("/othercontent", Operation.READ));
