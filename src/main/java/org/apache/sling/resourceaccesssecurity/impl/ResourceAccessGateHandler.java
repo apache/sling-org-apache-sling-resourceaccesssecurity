@@ -42,47 +42,50 @@ public class ResourceAccessGateHandler {
     /**
      * constructor
      */
-    public ResourceAccessGateHandler( @NotNull final ServiceReference<ResourceAccessGate> resourceAccessGateRef, @NotNull final ResourceAccessGate resourceAccessGate ) {
+    public ResourceAccessGateHandler(
+            @NotNull final ServiceReference<ResourceAccessGate> resourceAccessGateRef,
+            @NotNull final ResourceAccessGate resourceAccessGate) {
         this.reference = resourceAccessGateRef;
         this.resourceAccessGate = resourceAccessGate;
         // extract the service property "path"
         final String path = (String) resourceAccessGateRef.getProperty(ResourceAccessGate.PATH);
-        if ( path != null ) {
+        if (path != null) {
             pathPattern = Pattern.compile(path);
         } else {
             pathPattern = Pattern.compile(".*");
         }
 
         // extract the service property "operations"
-        final String[] ops = PropertiesUtil.toStringArray( resourceAccessGateRef.getProperty(ResourceAccessGate.OPERATIONS) );
-        if ( ops != null && ops.length > 0) {
+        final String[] ops =
+                PropertiesUtil.toStringArray(resourceAccessGateRef.getProperty(ResourceAccessGate.OPERATIONS));
+        if (ops != null && ops.length > 0) {
             for (final String opAsString : ops) {
                 final ResourceAccessGate.Operation operation = ResourceAccessGate.Operation.fromString(opAsString);
-                if ( operation != null ) {
+                if (operation != null) {
                     operations.add(operation);
                 }
             }
         } else {
-           Collections.addAll(operations, ResourceAccessGate.Operation.values());
+            Collections.addAll(operations, ResourceAccessGate.Operation.values());
         }
 
         // extract the service property "finaloperations"
-        final String[] finalOps = PropertiesUtil.toStringArray( resourceAccessGateRef.getProperty(ResourceAccessGate.FINALOPERATIONS) );
-        if ( finalOps != null ) {
+        final String[] finalOps =
+                PropertiesUtil.toStringArray(resourceAccessGateRef.getProperty(ResourceAccessGate.FINALOPERATIONS));
+        if (finalOps != null) {
             for (final String opAsString : finalOps) {
                 final ResourceAccessGate.Operation operation = ResourceAccessGate.Operation.fromString(opAsString);
-                if ( operation != null ) {
+                if (operation != null) {
                     finalOperations.add(operation);
                 }
             }
         }
-
     }
 
-    public boolean matches( final String path, final ResourceAccessGate.Operation operation ) {
+    public boolean matches(final String path, final ResourceAccessGate.Operation operation) {
         boolean returnValue = false;
 
-        if ( operations.contains( operation ) ) {
+        if (operations.contains(operation)) {
             if (path != null) {
                 final Matcher match = pathPattern.matcher(path);
                 returnValue = match.matches();
@@ -96,7 +99,7 @@ public class ResourceAccessGateHandler {
         return returnValue;
     }
 
-    public boolean isFinalOperation( final ResourceAccessGate.Operation operation ) {
+    public boolean isFinalOperation(final ResourceAccessGate.Operation operation) {
         return finalOperations.contains(operation);
     }
 
@@ -106,8 +109,8 @@ public class ResourceAccessGateHandler {
 
     @Override
     public boolean equals(final Object obj) {
-        if ( obj instanceof ResourceAccessGateHandler ) {
-            return ((ResourceAccessGateHandler)obj).reference.equals(this.reference);
+        if (obj instanceof ResourceAccessGateHandler) {
+            return ((ResourceAccessGateHandler) obj).reference.equals(this.reference);
         }
         return false;
     }

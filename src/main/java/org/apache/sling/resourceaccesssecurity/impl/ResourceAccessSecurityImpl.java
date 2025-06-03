@@ -42,13 +42,19 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
 
     private final boolean defaultAllowIfNoGateMatches;
 
-    protected ResourceAccessSecurityImpl(final boolean defaultAllowIfNoGateMatches, List<ServiceReference<ResourceAccessGate>> resourceAccessGateRefs,
-            ComponentContext componentContext, String resourceAccessGateReferenceName) {
+    protected ResourceAccessSecurityImpl(
+            final boolean defaultAllowIfNoGateMatches,
+            List<ServiceReference<ResourceAccessGate>> resourceAccessGateRefs,
+            ComponentContext componentContext,
+            String resourceAccessGateReferenceName) {
         this.defaultAllowIfNoGateMatches = defaultAllowIfNoGateMatches;
         // sort from highest ranked service to lowest ranked (opposite of default sorting of ServiceReference)
-        this.allHandlers = resourceAccessGateRefs.stream().sorted(Collections.reverseOrder()).map(ref -> new ResourceAccessGateHandler(ref, componentContext.locateService(resourceAccessGateReferenceName, ref))).collect(Collectors.toList());
+        this.allHandlers = resourceAccessGateRefs.stream()
+                .sorted(Collections.reverseOrder())
+                .map(ref -> new ResourceAccessGateHandler(
+                        ref, componentContext.locateService(resourceAccessGateReferenceName, ref)))
+                .collect(Collectors.toList());
     }
-
 
     /**
      * This method returns either an iterator delivering the matching handlers
@@ -74,7 +80,7 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
 
                 private void peek() {
                     this.next = null;
-                    while ( iter.hasNext() && next == null ) {
+                    while (iter.hasNext() && next == null) {
                         final ResourceAccessGateHandler handler = iter.next();
                         if (handler.matches(path, operation)) {
                             next = handler;
@@ -89,7 +95,7 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
 
                 @Override
                 public ResourceAccessGateHandler next() {
-                    if ( next == null ) {
+                    if (next == null) {
                         throw new NoSuchElementException();
                     }
                     final ResourceAccessGateHandler handler = this.next;
@@ -111,26 +117,26 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
     public Resource getReadableResource(final Resource resource) {
         Resource returnValue = null;
 
-        final Iterator<ResourceAccessGateHandler> accessGateHandlers = getMatchingResourceAccessGateHandlerIterator(
-                resource.getPath(), ResourceAccessGate.Operation.READ);
+        final Iterator<ResourceAccessGateHandler> accessGateHandlers =
+                getMatchingResourceAccessGateHandlerIterator(resource.getPath(), ResourceAccessGate.Operation.READ);
 
         GateResult finalGateResult = null;
         List<ResourceAccessGate> accessGatesForReadValues = null;
         boolean canReadAllValues = false;
 
-
-        if ( accessGateHandlers != null ) {
+        if (accessGateHandlers != null) {
 
             boolean noGateMatched = true;
-            
-            while ( accessGateHandlers.hasNext() ) {
+
+            while (accessGateHandlers.hasNext()) {
                 noGateMatched = false;
-                final ResourceAccessGateHandler resourceAccessGateHandler  = accessGateHandlers.next();
+                final ResourceAccessGateHandler resourceAccessGateHandler = accessGateHandlers.next();
 
                 final GateResult gateResult = !resourceAccessGateHandler
-                        .getResourceAccessGate().hasReadRestrictions(resource.getResourceResolver()) ? GateResult.GRANTED
-                        : resourceAccessGateHandler.getResourceAccessGate()
-                                .canRead(resource);
+                                .getResourceAccessGate()
+                                .hasReadRestrictions(resource.getResourceResolver())
+                        ? GateResult.GRANTED
+                        : resourceAccessGateHandler.getResourceAccessGate().canRead(resource);
                 if (!canReadAllValues && gateResult == GateResult.GRANTED) {
                     if (resourceAccessGateHandler.getResourceAccessGate().canReadAllValues(resource)) {
                         canReadAllValues = true;
@@ -146,19 +152,18 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
                     finalGateResult = gateResult;
                 }
                 // stop checking if the operation is final and the result not GateResult.CANT_DECIDE
-                if (gateResult != GateResult.CANT_DECIDE  && resourceAccessGateHandler.isFinalOperation(ResourceAccessGate.Operation.READ)) {
+                if (gateResult != GateResult.CANT_DECIDE
+                        && resourceAccessGateHandler.isFinalOperation(ResourceAccessGate.Operation.READ)) {
                     break;
                 }
             }
 
-
             // return null if access is denied or no ResourceAccessGate is present
             if (finalGateResult == GateResult.DENIED) {
                 returnValue = null;
-            } else if (finalGateResult == GateResult.GRANTED ) {
+            } else if (finalGateResult == GateResult.GRANTED) {
                 returnValue = resource;
-            } else if (noGateMatched && this.defaultAllowIfNoGateMatches)
-            {
+            } else if (noGateMatched && this.defaultAllowIfNoGateMatches) {
                 returnValue = resource;
             }
         }
@@ -167,70 +172,93 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
 
         // wrap Resource if read access is not or partly (values) not granted
         if (returnValue != null) {
-            if( !canReadAllValues || !canUpdateResource ) {
-                returnValue = new AccessGateResourceWrapper(returnValue,
-                        accessGatesForReadValues,
-                        canUpdateResource);
+            if (!canReadAllValues || !canUpdateResource) {
+                returnValue = new AccessGateResourceWrapper(returnValue, accessGatesForReadValues, canUpdateResource);
             }
         }
 
         return returnValue;
     }
 
-    private boolean canDoOperation(ResourceAccessGate.Operation operation, String path, Predicate<ResourceAccessGate> gatePredicate, Function<ResourceAccessGate, GateResult> gateResultFilter) {
-        final Iterator<ResourceAccessGateHandler> handlers = getMatchingResourceAccessGateHandlerIterator(
-                path, operation);
+    private boolean canDoOperation(
+            ResourceAccessGate.Operation operation,
+            String path,
+            Predicate<ResourceAccessGate> gatePredicate,
+            Function<ResourceAccessGate, GateResult> gateResultFilter) {
+        final Iterator<ResourceAccessGateHandler> handlers =
+                getMatchingResourceAccessGateHandlerIterator(path, operation);
         boolean result = false;
-        if ( handlers != null ) {
+        if (handlers != null) {
             GateResult finalGateResult = null;
             boolean noGateMatched = true;
 
-            while ( handlers.hasNext() ) {
+            while (handlers.hasNext()) {
                 noGateMatched = false;
-                final ResourceAccessGateHandler resourceAccessGateHandler  = handlers.next();
+                final ResourceAccessGateHandler resourceAccessGateHandler = handlers.next();
 
-                final GateResult gateResult = !gatePredicate.test(resourceAccessGateHandler.getResourceAccessGate()) ? GateResult.GRANTED
+                final GateResult gateResult = !gatePredicate.test(resourceAccessGateHandler.getResourceAccessGate())
+                        ? GateResult.GRANTED
                         : gateResultFilter.apply(resourceAccessGateHandler.getResourceAccessGate());
                 if (finalGateResult == null || finalGateResult == GateResult.DENIED) {
                     finalGateResult = gateResult;
                 }
-                if (finalGateResult == GateResult.GRANTED || gateResult != GateResult.CANT_DECIDE && 
-                        resourceAccessGateHandler.isFinalOperation(operation)) {
+                if (finalGateResult == GateResult.GRANTED
+                        || gateResult != GateResult.CANT_DECIDE
+                                && resourceAccessGateHandler.isFinalOperation(operation)) {
                     break;
                 }
             }
 
-            if ( finalGateResult == GateResult.GRANTED || (noGateMatched && this.defaultAllowIfNoGateMatches)) {
+            if (finalGateResult == GateResult.GRANTED || (noGateMatched && this.defaultAllowIfNoGateMatches)) {
                 result = true;
             }
         }
         return result;
     }
-    
-    
+
     @Override
     public boolean canOrderChildren(Resource resource) {
-        return canDoOperation(ResourceAccessGate.Operation.ORDER_CHILDREN, resource.getPath(), gate -> gate.hasOrderChildrenRestrictions(resource.getResourceResolver()), gate -> gate.canOrderChildren(resource));
+        return canDoOperation(
+                ResourceAccessGate.Operation.ORDER_CHILDREN,
+                resource.getPath(),
+                gate -> gate.hasOrderChildrenRestrictions(resource.getResourceResolver()),
+                gate -> gate.canOrderChildren(resource));
     }
 
     @Override
     public boolean canCreate(final String path, final ResourceResolver resolver) {
-        return canDoOperation(ResourceAccessGate.Operation.CREATE, path, gate -> gate.hasCreateRestrictions(resolver), gate -> gate.canCreate(path, resolver));
+        return canDoOperation(
+                ResourceAccessGate.Operation.CREATE,
+                path,
+                gate -> gate.hasCreateRestrictions(resolver),
+                gate -> gate.canCreate(path, resolver));
     }
 
     @Override
     public boolean canUpdate(final Resource resource) {
-        return canDoOperation(ResourceAccessGate.Operation.UPDATE, resource.getPath(), gate -> gate.hasUpdateRestrictions(resource.getResourceResolver()), gate -> gate.canUpdate(resource));
+        return canDoOperation(
+                ResourceAccessGate.Operation.UPDATE,
+                resource.getPath(),
+                gate -> gate.hasUpdateRestrictions(resource.getResourceResolver()),
+                gate -> gate.canUpdate(resource));
     }
 
     @Override
     public boolean canDelete(final Resource resource) {
-        return canDoOperation(ResourceAccessGate.Operation.DELETE, resource.getPath(), gate -> gate.hasDeleteRestrictions(resource.getResourceResolver()), gate -> gate.canDelete(resource));
+        return canDoOperation(
+                ResourceAccessGate.Operation.DELETE,
+                resource.getPath(),
+                gate -> gate.hasDeleteRestrictions(resource.getResourceResolver()),
+                gate -> gate.canDelete(resource));
     }
 
     @Override
     public boolean canExecute(final Resource resource) {
-        return canDoOperation(ResourceAccessGate.Operation.EXECUTE, resource.getPath(), gate -> gate.hasExecuteRestrictions(resource.getResourceResolver()), gate -> gate.canExecute(resource));
+        return canDoOperation(
+                ResourceAccessGate.Operation.EXECUTE,
+                resource.getPath(),
+                gate -> gate.hasExecuteRestrictions(resource.getResourceResolver()),
+                gate -> gate.canExecute(resource));
     }
 
     @Override
@@ -252,20 +280,15 @@ public abstract class ResourceAccessSecurityImpl implements ResourceAccessSecuri
     }
 
     @Override
-    public String transformQuery(final String query,
-            final String language,
-            final ResourceResolver resourceResolver)
-    throws AccessSecurityException {
+    public String transformQuery(final String query, final String language, final ResourceResolver resourceResolver)
+            throws AccessSecurityException {
         String returnValue = query;
 
         for (ResourceAccessGateHandler handler : allHandlers) {
-            returnValue = handler.getResourceAccessGate().transformQuery(
-                    returnValue, language, resourceResolver);
+            returnValue = handler.getResourceAccessGate().transformQuery(returnValue, language, resourceResolver);
             if (returnValue == null) {
-                throw new AccessSecurityException(
-                        "Method transformQuery in ResourceAccessGate "
-                                + handler.getResourceAccessGate().getClass()
-                                        .getName() + " returned null.");
+                throw new AccessSecurityException("Method transformQuery in ResourceAccessGate "
+                        + handler.getResourceAccessGate().getClass().getName() + " returned null.");
             }
         }
 
